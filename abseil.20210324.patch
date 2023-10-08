@@ -1,0 +1,44 @@
+--- abseil-cpp-20210324.1/absl/base/config.h	2021-04-21 00:55:14.000000000 +0800
++++ abseil-cpp-20210324.1.working/absl/base/config.h	2022-01-09 13:32:09.724042145 +0800
+@@ -551,7 +551,8 @@
+ #ifdef __has_include
+ #if __has_include(<string_view>) && defined(__cplusplus) && \
+     __cplusplus >= 201703L
+-#define ABSL_HAVE_STD_STRING_VIEW 1
++//#define ABSL_HAVE_STD_STRING_VIEW 1
++#undef ABSL_HAVE_STD_STRING_VIEW
+ #endif
+ #endif
+ 
+--- abseil-cpp-20210324.1/absl/status/status.h	2021-04-21 00:55:14.000000000 +0800
++++ abseil-cpp-20210324.1.working/absl/status/status.h	2022-01-09 13:40:25.346919393 +0800
+@@ -615,11 +615,11 @@
+   static bool EqualsSlow(const absl::Status& a, const absl::Status& b);
+ 
+   // MSVC 14.0 limitation requires the const.
+-  static constexpr const char kMovedFromString[] =
++  const char *kMovedFromString =
+       "Status accessed after move.";
+ 
+   static const std::string* EmptyString();
+-  static const std::string* MovedFromString();
++  /*static*/ const std::string* MovedFromString();
+ 
+   // Returns whether rep contains an inlined representation.
+   // See rep_ for details.
+--- abseil-cpp-20210324.1/absl/status/status.cc	2021-04-21 00:55:14.000000000 +0800
++++ abseil-cpp-20210324.1.working/absl/status/status.cc	2022-01-09 13:39:05.890175586 +0800
+@@ -189,10 +189,11 @@
+   return empty_string;
+ }
+ 
+-constexpr const char Status::kMovedFromString[];
++//constexpr const char Status::kMovedFromString =
++//      "Status accessed after move.";
+ 
+ const std::string* Status::MovedFromString() {
+-  static std::string* moved_from_string = new std::string(kMovedFromString);
++  /*static*/ std::string* moved_from_string = new std::string(kMovedFromString);
+   return moved_from_string;
+ }
+ 
