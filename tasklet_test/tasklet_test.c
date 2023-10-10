@@ -26,10 +26,13 @@
 #include <linux/printk.h>
 #include <asm/msr.h>
 
-#define MAX_CPU_NUM 1024
+#define MAX_CPU_NUM 512
+#define TASKLET_NUM_PER_CPU 1024
+
 struct tsc_pair {
-        uint64_t cpu_id, curr_cpu_id;
-        uint64_t tsc;
+        int cpu_id, curr_cpu_id;
+        uint8_t valid;
+        uint64_t tsc1, tsc2;
 };
 
 dev_t dev = 0;
@@ -40,12 +43,10 @@ static int __init etx_driver_init(void);
 static void __exit etx_driver_exit(void);
  
 static struct task_struct *etx_thread[MAX_CPU_NUM];
-static struct tsc_pair etx_tsc[MAX_CPU_NUM];
+static struct tsc_pair *etx_tsc[MAX_CPU_NUM];
 static int ncpu = 0;
 
 static struct tasklet_struct *tasklet[MAX_CPU_NUM];
-
-static volatile int stop = 0;
 
 /*
 ** Function Prototypes
@@ -62,9 +63,10 @@ static ssize_t etx_write(struct file *filp,
 /*Tasklet Function*/
 void tasklet_fn(unsigned long arg)
 {
-    uint64_t cpu_id = arg;
-    etx_tsc[cpu_id].tsc = rdtsc();
-    etx_tsc[cpu_id].curr_cpu_id = smp_processor_id();
+    int cpu_id = arg >> 32;
+    int i = arg & 0xFFFFFFFF;
+    etx_tsc[cpu_id][i].tsc2 = rdtsc();
+    etx_tsc[cpu_id][i].curr_cpu_id = smp_processor_id();
 }
 
 int thread_function(void *pv);
@@ -74,32 +76,48 @@ int thread_function(void *pv);
 int thread_function(void *pv)
 {
     struct tsc_pair *ptsc = pv;
-    uint64_t tsc;
+    int i;
+    int cpu_id;
 
-    tasklet[ptsc->cpu_id] = kmalloc(sizeof(struct tasklet_struct), GFP_KERNEL);
-    if (NULL == tasklet[ptsc->cpu_id]) {
+    cpu_id = ptsc[0].cpu_id;
+    tasklet[cpu_id] = kmalloc(sizeof(struct tasklet_struct) * TASKLET_NUM_PER_CPU, GFP_KERNEL);
+    if (NULL == tasklet[cpu_id]) {
         printk(KERN_INFO "cannot allocate memory");
+        return 1;
     }
-    tasklet_init(tasklet[ptsc->cpu_id], tasklet_fn, ptsc->cpu_id);
+    for (i = 0; i < TASKLET_NUM_PER_CPU; i++)
+    {
+        uint64_t d = ptsc[0].cpu_id;
+        d = (d << 32) | i;
+        tasklet_init(tasklet[ptsc[i].cpu_id] + i, tasklet_fn, d);
+    }
 
     while(!kthread_should_stop()) {
-	int cpu_changed = ptsc->cpu_id != smp_processor_id();
-        //pr_info("In EmbeTronicX Thread %lld %d\n", ptsc->cpu_id, i++);
-	if (!cpu_changed)
-	{
-            ptsc->tsc = 0;
-            tsc = rdtsc();
-            tasklet_schedule(tasklet[ptsc->cpu_id]);
-	}
+        for (i = 0; i < TASKLET_NUM_PER_CPU; i++)
+        {
+                int cpu_changed = ptsc[i].cpu_id != smp_processor_id();
+                //pr_info("In EmbeTronicX Thread %lld %d\n", ptsc->cpu_id, i++);
+                if (!cpu_changed)
+                {
+                    ptsc[i].valid = 1;
+                    ptsc[i].tsc2 = 0;
+                    ptsc[i].tsc1 = rdtsc();
+                    
+                    tasklet_schedule(tasklet[ptsc[i].cpu_id] + i);
+                }
+                else
+                    ptsc[i].valid = 0;
+        }
         msleep(1);
-	if (!cpu_changed)
-	{
-            pr_info("[%lld:%lld] %llu\n", ptsc->cpu_id, ptsc->curr_cpu_id, ptsc->tsc - tsc);
-	}
+        for (i = 0; i < TASKLET_NUM_PER_CPU; i++)
+        {
+                if (0 != ptsc[i].valid && ptsc[i].tsc2 != 0)
+                    pr_info("[%d:%d:%d] %llu\n", ptsc[i].cpu_id, ptsc[i].curr_cpu_id, i, ptsc[i].tsc2 - ptsc[i].tsc1);
+        }
     }
 
-    if (NULL != tasklet[ptsc->cpu_id]) {
-        kfree(tasklet[ptsc->cpu_id]);
+    if (NULL != tasklet[cpu_id]) {
+        kfree(tasklet[cpu_id]);
     }
     return 0;
 }
@@ -156,7 +174,7 @@ static ssize_t etx_write(struct file *filp,
 */  
 static int __init etx_driver_init(void)
 {
-        int i;
+        int i, j;
 
         /*Allocating Major number*/
         if((alloc_chrdev_region(&dev, 0, 1, "etx_Dev")) <0){
@@ -189,8 +207,10 @@ static int __init etx_driver_init(void)
         ncpu = num_online_cpus();
         for (i = 0; i < ncpu; i++)
         {
-            etx_tsc[i].cpu_id = i;
-            etx_thread[i] = kthread_create(thread_function, &etx_tsc[i],"eTx Thread %d", i);
+            etx_tsc[i] = kmalloc(sizeof(struct tsc_pair) * TASKLET_NUM_PER_CPU, GFP_KERNEL);
+            for (j = 0; j < TASKLET_NUM_PER_CPU; j++)
+                etx_tsc[i][j].cpu_id = i;
+            etx_thread[i] = kthread_create(thread_function, etx_tsc[i],"eTx Thread %d", i);
             if(etx_thread[i]) {
                 kthread_bind(etx_thread[i], i);
                 wake_up_process(etx_thread[i]);
@@ -227,11 +247,12 @@ r_class:
 static void __exit etx_driver_exit(void)
 {
         int i;
-        stop = 1;
         msleep(1000);
         for (i = 0; i < ncpu; i++)
         {
             kthread_stop(etx_thread[i]);
+            if (etx_tsc[i])
+                kfree(etx_tsc[i]);
         }
         device_destroy(dev_class,dev);
         class_destroy(dev_class);
@@ -247,3 +268,4 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("EmbeTronicX <embetronicx@gmail.com>");
 MODULE_DESCRIPTION("A simple device driver - Kernel Thread");
 MODULE_VERSION("1.14");
+
