@@ -25,9 +25,10 @@
 #include <linux/interrupt.h>
 #include <linux/printk.h>
 #include <asm/msr.h>
+#include <linux/atomic.h>
 
 #define MAX_CPU_NUM 512
-#define TASKLET_NUM_PER_CPU 1024
+#define TASKLET_NUM_PER_CPU 1
 
 struct tsc_pair {
         int cpu_id, curr_cpu_id;
@@ -48,6 +49,9 @@ static int ncpu = 0;
 
 static struct tasklet_struct *tasklet[MAX_CPU_NUM];
 
+volatile int stop = 0;
+atomic_t migrated = {0};
+
 /*
 ** Function Prototypes
 */
@@ -65,8 +69,19 @@ void tasklet_fn(unsigned long arg)
 {
     int cpu_id = arg >> 32;
     int i = arg & 0xFFFFFFFF;
-    etx_tsc[cpu_id][i].tsc2 = rdtsc();
-    etx_tsc[cpu_id][i].curr_cpu_id = smp_processor_id();
+    struct tsc_pair *ptsc = etx_tsc[cpu_id];
+    ptsc[i].tsc2 = rdtsc();
+    ptsc[i].curr_cpu_id = smp_processor_id();
+    if (ptsc[i].cpu_id != ptsc[i].curr_cpu_id) {
+        atomic_inc(&migrated);
+    }
+    if (!stop) {
+        ptsc[i].valid = 1;
+        ptsc[i].tsc2 = 0;
+        ptsc[i].tsc1 = rdtsc();
+        ptsc[i].cpu_id = smp_processor_id();
+        tasklet_schedule(tasklet[cpu_id] + i);
+    }
 }
 
 int thread_function(void *pv);
@@ -92,28 +107,17 @@ int thread_function(void *pv)
         tasklet_init(tasklet[ptsc[i].cpu_id] + i, tasklet_fn, d);
     }
 
+    for (i = 0; i < TASKLET_NUM_PER_CPU; i++)
+    {
+        ptsc[i].valid = 1;
+        ptsc[i].tsc2 = 0;
+        ptsc[i].tsc1 = rdtsc();
+        
+        tasklet_schedule(tasklet[ptsc[i].cpu_id] + i);
+    }
+
     while(!kthread_should_stop()) {
-        for (i = 0; i < TASKLET_NUM_PER_CPU; i++)
-        {
-                int cpu_changed = ptsc[i].cpu_id != smp_processor_id();
-                //pr_info("In EmbeTronicX Thread %lld %d\n", ptsc->cpu_id, i++);
-                if (!cpu_changed)
-                {
-                    ptsc[i].valid = 1;
-                    ptsc[i].tsc2 = 0;
-                    ptsc[i].tsc1 = rdtsc();
-                    
-                    tasklet_schedule(tasklet[ptsc[i].cpu_id] + i);
-                }
-                else
-                    ptsc[i].valid = 0;
-        }
-        msleep(1);
-        for (i = 0; i < TASKLET_NUM_PER_CPU; i++)
-        {
-                if (0 != ptsc[i].valid && ptsc[i].tsc2 != 0)
-                    pr_info("[%d:%d:%d] %llu\n", ptsc[i].cpu_id, ptsc[i].curr_cpu_id, i, ptsc[i].tsc2 - ptsc[i].tsc1);
-        }
+        msleep(100);
     }
 
     if (NULL != tasklet[cpu_id]) {
@@ -247,7 +251,8 @@ r_class:
 static void __exit etx_driver_exit(void)
 {
         int i;
-        msleep(1000);
+        stop = 1;
+        msleep(100);
         for (i = 0; i < ncpu; i++)
         {
             kthread_stop(etx_thread[i]);
@@ -259,6 +264,7 @@ static void __exit etx_driver_exit(void)
         cdev_del(&etx_cdev);
         unregister_chrdev_region(dev, 1);
         pr_info("Device Driver Remove...Done!!\n");
+        pr_info("Tasklet migration count %d\n", migrated.counter);
 }
  
 module_init(etx_driver_init);
@@ -268,4 +274,3 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("EmbeTronicX <embetronicx@gmail.com>");
 MODULE_DESCRIPTION("A simple device driver - Kernel Thread");
 MODULE_VERSION("1.14");
-
