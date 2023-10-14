@@ -72,15 +72,17 @@ void tasklet_fn(unsigned long arg)
     struct tsc_pair *ptsc = etx_tsc[cpu_id];
     ptsc[i].tsc2 = rdtsc();
     ptsc[i].curr_cpu_id = smp_processor_id();
-    if (ptsc[i].cpu_id != ptsc[i].curr_cpu_id) {
-        atomic_inc(&migrated);
-    }
     if (!stop) {
-        ptsc[i].valid = 1;
-        ptsc[i].tsc2 = 0;
-        ptsc[i].tsc1 = rdtsc();
-        ptsc[i].cpu_id = smp_processor_id();
-        tasklet_schedule(tasklet[cpu_id] + i);
+        if (ptsc[i].cpu_id != ptsc[i].curr_cpu_id) {
+            atomic_inc(&migrated);
+            ptsc[i].valid = 0;
+        } else {
+            ptsc[i].valid = 1;
+            ptsc[i].tsc2 = 0;
+            ptsc[i].tsc1 = rdtsc();
+            ptsc[i].cpu_id = smp_processor_id();
+            tasklet_schedule(tasklet[cpu_id] + i);
+	}
     }
 }
 
@@ -107,17 +109,24 @@ int thread_function(void *pv)
         tasklet_init(tasklet[ptsc[i].cpu_id] + i, tasklet_fn, d);
     }
 
-    for (i = 0; i < TASKLET_NUM_PER_CPU; i++)
-    {
-        ptsc[i].valid = 1;
-        ptsc[i].tsc2 = 0;
-        ptsc[i].tsc1 = rdtsc();
-        
-        tasklet_schedule(tasklet[ptsc[i].cpu_id] + i);
-    }
-
     while(!kthread_should_stop()) {
-        msleep(100);
+        if (cpu_id != smp_processor_id()) {
+            msleep(1);
+            continue;
+        }
+
+        for (i = 0; i < TASKLET_NUM_PER_CPU; i++)
+        {
+            if (0 == ptsc[i].valid) {
+                ptsc[i].valid = 1;
+                ptsc[i].tsc2 = 0;
+                ptsc[i].tsc1 = rdtsc();
+                ptsc[i].cpu_id = cpu_id;
+        
+                tasklet_schedule(tasklet[ptsc[i].cpu_id] + i);
+            }
+        }
+        msleep(1);
     }
 
     if (NULL != tasklet[cpu_id]) {
@@ -212,8 +221,10 @@ static int __init etx_driver_init(void)
         for (i = 0; i < ncpu; i++)
         {
             etx_tsc[i] = kmalloc(sizeof(struct tsc_pair) * TASKLET_NUM_PER_CPU, GFP_KERNEL);
-            for (j = 0; j < TASKLET_NUM_PER_CPU; j++)
+            for (j = 0; j < TASKLET_NUM_PER_CPU; j++) {
                 etx_tsc[i][j].cpu_id = i;
+                etx_tsc[i][j].valid = 0;
+            }
             etx_thread[i] = kthread_create(thread_function, etx_tsc[i],"eTx Thread %d", i);
             if(etx_thread[i]) {
                 kthread_bind(etx_thread[i], i);
@@ -252,7 +263,7 @@ static void __exit etx_driver_exit(void)
 {
         int i;
         stop = 1;
-        msleep(100);
+        msleep(10);
         for (i = 0; i < ncpu; i++)
         {
             kthread_stop(etx_thread[i]);
