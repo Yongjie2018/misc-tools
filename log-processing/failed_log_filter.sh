@@ -161,6 +161,29 @@ function get_product_name()
 
 }
 
+function compose_and_send()
+{
+        from=$1
+        to=$2
+        cc=$3
+        subject=$4
+        body=$5
+
+        tmpfile=$(mktemp /tmp/XXXXXXXX.eml)
+        >$tmpfile
+        echo "From: $from" >>$tmpfile
+        echo "To: $to" >>$tmpfile
+        echo "CC: $cc" >>$tmpfile
+        echo "Subject: $subject" >>$tmpfile
+        #echo "" >>$tmpfile
+        echo "Mime-Version: 1.0" >>$tmpfile
+        echo "" >>$tmpfile
+        cat $body >>$tmpfile
+        /usr/sbin/sendmail -t <$tmpfile
+        rm $tmpfile
+}
+
+
 if [ -f ${path_lock} ]; then
 	echo "$(date) previous session is still running, yielding ..."
 	exit 0
@@ -190,7 +213,7 @@ for x in ${path_zipped_log}/*; do
 	catch_calprit ${filename}
 	if (( 0 == $? )); then
 		echo "Caught a calprit ${filename}"
-		echo -e "Subject: Caught a calprit ${filename}\n\nEmpty email content" | /usr/sbin/sendmail yongjie.sheng@intel.com
+		mr=$(compose_and_send "yongjie sheng <ysheng4@ysheng4-NP5570M5.sh.intel.com>" "yongjie.sheng@intel.com" "yongjie.sheng@intel.com" "Caught a calprit ${filename}" /home/ysheng4/default-mail.txt)
 		touch ${path_unzipped_failed_log}/${filename}.ppin 
 	fi
 
@@ -201,7 +224,7 @@ for x in ${path_zipped_log}/*; do
 
 	bdat_result=$(any_bdat_ewl_captures ${filename})
 	if [ "$bdat_result" != "0" ]; then
-		echo -e "Subject: Got BDAT failure ${filename} with prod name ${prod_name}\n\nEmpty email content" | /usr/sbin/sendmail yongjie.sheng@intel.com
+		mr=$(compose_and_send "yongjie sheng <ysheng4@ysheng4-NP5570M5.sh.intel.com>" "yongjie.sheng@intel.com" "yongjie.sheng@intel.com" "Got BDAT failure ${filename} with prod name ${prod_name}" /tmp/bdat_data.txt)
 	fi
 
 	case ${result} in
@@ -212,8 +235,7 @@ for x in ${path_zipped_log}/*; do
 			echo "Got failed log ${filename}"
 			move_to_failed_path ${filename}
 			touch ${path_processed_log}/${filename}.${extname}
-			echo -e "Subject: Got failed log ${filename} with prod name ${prod_name}\n\nEmpty email content" | /usr/sbin/sendmail yongjie.sheng@intel.com
-			echo -e "Subject: Got failed log ${filename} with prod name ${prod_name}\n\nEmpty email content" | /usr/sbin/sendmail hongwei.yu@intel.com
+			mr=$(compose_and_send "yongjie sheng <ysheng4@ysheng4-NP5570M5.sh.intel.com>" "yongjie.sheng@intel.com" "hongwei.yu@intel.com" "Got failed log ${filename} with prod name ${prod_name}" /home/ysheng4/default-mail.txt)
 			;;
 		*)
 			echo "Unexpected failure ${result}"
@@ -229,8 +251,7 @@ for x in ${path_zipped_log}/*; do
 			echo "unknown duration error"
 			move_to_duration_abnormal_path ${filename} ""
 			touch ${path_processed_log}/${filename}.${extname}
-			echo -e "Subject: Got unknown duration log ${filename} with prod name ${prod_name}\n\nEmpty email content" | /usr/sbin/sendmail yongjie.sheng@intel.com
-			echo -e "Subject: Got unknown duration log ${filename} with prod name ${prod_name}\n\nEmpty email content" | /usr/sbin/sendmail hongwei.yu@intel.com
+			mr=$(compose_and_send "yongjie sheng <ysheng4@ysheng4-NP5570M5.sh.intel.com>" "yongjie.sheng@intel.com" "hongwei.yu@intel.com" "Got unknown duration log ${filename} with prod name ${prod_name}" /home/ysheng4/default-mail.txt)
 			;;
 		"2")
 			echo "duration is too small"
@@ -282,10 +303,7 @@ for x in ${path_zipped_log}/*; do
 		cp $x ${path_working}/tmp
 		if ! /usr/bin/python3 /home/ysheng4/Downloads/shc_analyzer/main.py -d ${path_working}/tmp -o /tmp/results.json; then
 			echo ${x} >> ${path_syslog_failure}/list.log
-			#/usr/bin/uuencode /tmp/results.json | /usr/sbin/sendmail -s "Got syslog failure v2 on ${folder_name}" yongjie.sheng@intel.com
-			echo -e "Subject: Got syslog failure v2 on ${folder_name}\n\n${x}" | /usr/sbin/sendmail yongjie.sheng@intel.com
-			#/usr/bin/uuencode /tmp/results.json | /usr/sbin/sendmail -s "Got syslog failure v2 on ${folder_name}" hongwei.yu@intel.com
-			echo -e "Subject: Got syslog failure v2 on ${folder_name}\n\n${x}" | /usr/sbin/sendmail hongwei.yu@intel.com
+			mr=$(compose_and_send "yongjie sheng <ysheng4@ysheng4-NP5570M5.sh.intel.com>" "yongjie.sheng@intel.com" "hongwei.yu@intel.com" "Got syslog failure v2 on ${folder_name}" /tmp/results.json)
 			cat /tmp/results.json
 		fi
 		rm ${path_working}/tmp/*
@@ -296,5 +314,5 @@ done
 
 rm -f ${path_lock}
 if [[ "$processed_count" -ne "0" ]]; then
-	echo -e "Subject: Processed $processed_count logs $(date)" | /usr/sbin/sendmail yongjie.sheng@intel.com
+	mr=$(compose_and_send "yongjie sheng <ysheng4@ysheng4-NP5570M5.sh.intel.com>" "yongjie.sheng@intel.com" "yongjie.sheng@intel.com" "Processed ${processed_count} logs $(date)" /home/ysheng4/default-mail.txt)
 fi
