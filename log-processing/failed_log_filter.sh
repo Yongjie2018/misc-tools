@@ -301,7 +301,7 @@ for x in ${path_zipped_log}/*; do
 		fi
 
 		cp $x ${path_working}/tmp
-		if ! /usr/bin/python3 /home/ysheng4/Downloads/shc_analyzer/main.py -d ${path_working}/tmp -o /tmp/results.json; then
+		if ! /usr/bin/python3 /home/ysheng4/bin/shc_analy_detect.py -d ${path_working}/tmp -o /tmp/results.json; then
 			echo ${x} >> ${path_syslog_failure}/list.log
 			mr=$(compose_and_send "yongjie sheng <ysheng4@ysheng4-NP5570M5.sh.intel.com>" "yongjie.sheng@intel.com" "hongwei.yu@intel.com" "Got syslog failure v2 on ${folder_name}" /tmp/results.json)
 			cat /tmp/results.json
