@@ -66,7 +66,9 @@ prodname_to_vendor = {
 
 dup_ppin = {}
 dup_sn = {}
-valid_cpu_type = ["SPR-E5", "SPR-E4"]
+spr_cpu_type = ["SPR-E5", "SPR-E4"]
+emr_cpu_type = ["EMR-A0", "EMR-A1"]
+valid_cpu_type = spr_cpu_type
 #valid_cpu_type = ["SPR-E5", "SPR-E4", "SPR-E3"]
 
 def parse_report(path):
@@ -395,6 +397,8 @@ if __name__ == "__main__":
         print("%10s" % (v), end="")
     print("")
     
+    # SPR
+    print("---------------------------------------------- SPR ----------------------------------------------")
     c = dump_ppin_map_non_valid_cpu_type(map, vendor_list, args.print_non_valid)
     print("Non valid PPIN #", end="")
     for v in header:
@@ -425,4 +429,29 @@ if __name__ == "__main__":
         dump_ppin_map_till(map, 'ppin-map.xlsx', args.till)
     if args.sn_list:
         dump_sn_map_till(map, 'sn-map.xlsx', args.till)
+    
+    # EMR
+    print("---------------------------------------------- EMR ----------------------------------------------")
+    valid_cpu_type = emr_cpu_type
+    c = dump_ppin_map_2p5(map, vendor_list)
+    print("2p5       PPIN #", end="")
+    for v in header:
+        print("%10d" % (c[v]), end="")
+    print("")
+
+    c = dump_ppin_map(map, vendor_list)
+    print("Total     PPIN #", end="")
+    for v in header:
+        print("%10d" % (c[v]), end="")
+    print("")
+    for year in range(2022, 2024):
+        for month in range(1, 13):
+            c = dump_ppin_map_by_month(map, year, month, vendor_list)
+            if c and c["Total"] > 0:
+                #print("[", year, month, "]", "PPIN #", c)
+                print("[%04d %02d] PPIN #" % (year, month), end="")
+                for v in header:
+                    print("%10d" % (c[v]), end="")
+                print("")
+    
     print("By", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
