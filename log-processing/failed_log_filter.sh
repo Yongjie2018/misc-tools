@@ -70,7 +70,6 @@ function move_to_duration_abnormal_path()
 	subdir=$2
 
 	echo "Moving to ${path_duration_abnormal_log}/${subdir}/${fn}/"
-	#mv ${path_working}/${fn} ${path_duration_abnormal_log}/${subdir}
 	rm -rf ${path_working}/${fn}
 	touch ${path_duration_abnormal_log}/${subdir}/${fn}
 }
@@ -193,7 +192,7 @@ touch ${path_lock}
 
 processed_count=0
 
-# please don't quit this for loop without remove the ${path_lock} file
+# this loop is not re-entry proof, please make sure to hold the ${path_lock}
 for x in ${path_zipped_log}/*; do
 	filename=$(basename -- $x)
 	extname=${filename#*.}
@@ -257,15 +256,11 @@ for x in ${path_zipped_log}/*; do
 			echo "duration is too small"
 			move_to_duration_abnormal_path ${filename} "less"
 			touch ${path_processed_log}/${filename}.${extname}
-			#echo -e "Subject: Got duration <95% log ${filename} with prod name ${prod_name}\n\nEmpty email content" | /usr/sbin/sendmail yongjie.sheng@intel.com
-			#echo -e "Subject: Got duration <95% log ${filename} with prod name ${prod_name}\n\nEmpty email content" | /usr/sbin/sendmail hongwei.yu@intel.com
 			;;
 		"3")
 			echo "duration is too big"
 			move_to_duration_abnormal_path ${filename} "more"
 			touch ${path_processed_log}/${filename}.${extname}
-			#echo -e "Subject: Got duration >105% log ${filename} with prod name ${prod_name}\n\nEmpty email content" | /usr/sbin/sendmail yongjie.sheng@intel.com
-			#echo -e "Subject: Got duration >105% log ${filename} with prod name ${prod_name}\n\nEmpty email content" | /usr/sbin/sendmail hongwei.yu@intel.com
 			;;
 		"x")
 			remove_from_working_space ${filename}
@@ -288,15 +283,6 @@ for x in ${path_zipped_log}/*; do
 			mkdir ${path_unzipped_log}/${folder_name}
 			pushd ${path_unzipped_log}/${folder_name} 1>/dev/null
 			tar xf $x; 
-			#syslog_path=$(find -name sys__*.log)
-			#if ! [ -z "${syslog_path}" ]; then
-			#	echo "Processing ${syslog_path} in $PWD"
-			#	if ! /home/ysheng4/bin/syslog_parser.py ${syslog_path}; then
-			#		echo ${syslog_path} >> ${path_syslog_failure}/list.log
-			#		echo -e "Subject: Got syslog failure on ${folder_name}\n\n${syslog_path}" | /usr/sbin/sendmail yongjie.sheng@intel.com
-			#		echo -e "Subject: Got syslog failure on ${folder_name}\n\n${syslog_path}" | /usr/sbin/sendmail hongwei.yu@intel.com
-			#	fi
-			#fi
 			popd 1>/dev/null 
 		fi
 
