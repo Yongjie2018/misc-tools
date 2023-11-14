@@ -182,6 +182,39 @@ function compose_and_send()
         rm $tmpfile
 }
 
+function idas_processing()
+{
+	folder_name=$1
+	prod_name=$2
+	platform=""
+	cpu_type_str=$(grep "^CPU Type" $(find ${path_prod_name_log}/${folder_name} -name report.txt | head -n 1) | awk -F ":" '{ print $2 }')
+	case ${cpu_type_str} in
+		*SPR*)
+			platform=spr
+			;;
+		*EMR*)
+			platform=emr
+			;;
+		*)
+			return 1
+			;;
+	esac
+
+	if find ${path_prod_name_log}/${folder_name} -name idas_sutdump.json >/dev/null
+	then
+		fn=$(find ${path_prod_name_log}/${folder_name} -name idas_sutdump.json)
+		fn=$(echo $fn | sed 's/\"/\\\"/g')
+	else
+		return 1
+	fi
+
+	if /home/ysheng4/Downloads/IDASAgentAnalyzer_release/IDASAgentAnalyzer -p ${platform} -f $fn -o json >/tmp/idas.decoded.json
+	then
+		mr=$(compose_and_send "yongjie sheng <ysheng4@ysheng4-NP5570M5.sh.intel.com>" "yongjie.sheng@intel.com,karthikeyan.selvaraj@intel.com,lokeswar.seetharama.nandhagopal@intel.com,scott.allen.petersen@intel.com" "hongwei.yu@intel.com" "IDAS analyzing result on ${folder_name} with prod name ${prod_name}" /tmp/idas.decoded.json)
+	fi
+	rm -f /tmp/idas.decoded.json
+}
+
 
 if [ -f ${path_lock} ]; then
 	echo "$(date) previous session is still running, yielding ..."
@@ -293,6 +326,8 @@ for x in ${path_zipped_log}/*; do
 			cat /tmp/results.json
 		fi
 		rm ${path_working}/tmp/*
+
+		idas_processing ${fn_with_prod_name} ${prod_name}
 	else
 		echo "Can't handle name $x"
 	fi
