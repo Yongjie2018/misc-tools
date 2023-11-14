@@ -124,7 +124,8 @@ def build_map(path, map):
 
 def save_map(path, map):
     with open(path, 'w') as fp:
-        json.dump(map, fp)
+        pretty_str = json.dumps(map, indent=4)
+        fp.write(pretty_str)
 
 def load_map(path):
     try:
