@@ -2,6 +2,7 @@
 
 import os
 import sys
+import time
 import argparse
 import re
 import json
@@ -456,4 +457,4 @@ if __name__ == "__main__":
                     print("%10d" % (c[v]), end="")
                 print("")
     
-    print("By", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    print("By", time.ctime(os.path.getmtime('/home/ysheng4/Downloads/ppin.map')))
