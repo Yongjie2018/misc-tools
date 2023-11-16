@@ -215,6 +215,18 @@ function idas_processing()
 	rm -f /tmp/idas.decoded.json
 }
 
+function share_logs()
+{
+	regex_date="[A-Za-z0-9]+_shc_report.*_([0-9]{4}-[0-9]{2}-[0-9]{2}).*"
+	fn=$1
+	fn_with_prod_name=$2
+	cp $fn ${path_prod_name_log}/${fn_with_prod_name}
+	#if [[ $fn =~ $regex_date ]]; then
+	#	log_date=${BASH_REMATCH[1]}
+	#	scp $fn smbshare@10.239.xx.xx:/home/smbshare/inspur-100k/${log_date}/
+	#fi
+}
+
 
 if [ -f ${path_lock} ]; then
 	echo "$(date) previous session is still running, yielding ..."
@@ -308,8 +320,7 @@ for x in ${path_zipped_log}/*; do
 	if [[ ${filename}.${extname} =~ $regex_p ]]; then
 		fn_with_prod_name=${BASH_REMATCH[1]}_${prod_name}_shc_report_${BASH_REMATCH[2]}
 		echo "${fn_with_prod_name}"
-		cp $x ${path_prod_name_log}/${fn_with_prod_name}
-		cp $x /home/smbshare/product_name_log/${fn_with_prod_name}
+		share_logs $x ${fn_with_prod_name}
 
 		folder_name=$(echo ${fn_with_prod_name} | sed 's/\.tar\.xz$//')
 		if ! [ -d ${path_unzipped_log}/${folder_name} ]; then 
