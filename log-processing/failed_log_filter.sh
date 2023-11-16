@@ -187,7 +187,7 @@ function idas_processing()
 	folder_name=$1
 	prod_name=$2
 	platform=""
-	cpu_type_str=$(grep "^CPU Type" $(find ${path_prod_name_log}/${folder_name} -name report.txt | head -n 1) | awk -F ":" '{ print $2 }')
+	cpu_type_str=$(grep "^CPU Type" $(find ${path_unzipped_log}/${folder_name} -name report.txt | head -n 1) | awk -F ":" '{ print $2 }')
 	case ${cpu_type_str} in
 		*SPR*)
 			platform=spr
@@ -200,9 +200,9 @@ function idas_processing()
 			;;
 	esac
 
-	if find ${path_prod_name_log}/${folder_name} -name idas_sutdump.json >/dev/null
+	if find ${path_unzipped_log}/${folder_name} -name idas_sutdump.json >/dev/null
 	then
-		fn=$(find ${path_prod_name_log}/${folder_name} -name idas_sutdump.json)
+		fn=$(find ${path_unzipped_log}/${folder_name} -name idas_sutdump.json)
 		fn=$(echo $fn | sed 's/\"/\\\"/g')
 	else
 		return 1
