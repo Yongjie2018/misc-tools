@@ -223,6 +223,7 @@ function share_logs()
 	cp $fn ${path_prod_name_log}/${fn_with_prod_name}
 	#if [[ $fn =~ $regex_date ]]; then
 	#	log_date=${BASH_REMATCH[1]}
+	#	ssh smbshare@10.239.xx.xx "mkdir -p /home/smbshare/inspur-100k/${log_date}"
 	#	scp $fn smbshare@10.239.xx.xx:/home/smbshare/inspur-100k/${log_date}/
 	#fi
 }
