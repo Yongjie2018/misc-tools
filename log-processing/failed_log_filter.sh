@@ -184,7 +184,7 @@ function compose_and_send()
 
 function idas_processing()
 {
-	folder_name=$1
+	folder_name=$(echo $1 | sed 's/\.tar\.xz$//')
 	prod_name=$2
 	platform=""
 	cpu_type_str=$(grep "^CPU Type" $(find ${path_unzipped_log}/${folder_name} -name report.txt | head -n 1) | awk -F ":" '{ print $2 }')
