@@ -8,6 +8,7 @@ path_processed_log=${path_base}/processed_log
 path_prod_name_log=${path_base}/product_name_log
 path_duration_abnormal_log=${path_base}/duration_abnormal_log
 path_unzipped_log=${path_base}/unzipped_log
+path_idas_log=${path_base}/idas_log
 path_syslog_failure=${path_base}/syslog_failure
 path_lock=/tmp/100k-log-lock
 
@@ -211,6 +212,9 @@ function idas_processing()
 	if /home/ysheng4/Downloads/IDASAgentAnalyzer_release/IDASAgentAnalyzer -p ${platform} -f $fn -o json >/tmp/idas.decoded.json
 	then
 		mr=$(compose_and_send "yongjie sheng <ysheng4@ysheng4-NP5570M5.sh.intel.com>" "yongjie.sheng@intel.com,karthikeyan.selvaraj@intel.com,lokeswar.seetharama.nandhagopal@intel.com,scott.allen.petersen@intel.com" "hongwei.yu@intel.com" "IDAS analyzing result on ${folder_name}" /tmp/idas.decoded.json)
+		mkdir -p ${path_idas_log}/${folder_name}
+		cat $fn | gzip > ${path_idas_log}/${folder_name}/idas_sutdump.json.gz
+		cp /tmp/idas.decoded.json ${path_idas_log}/${folder_name}
 	fi
 	rm -f /tmp/idas.decoded.json
 }
