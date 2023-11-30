@@ -215,6 +215,8 @@ function idas_processing()
 		mkdir -p ${path_idas_log}/${folder_name}
 		cat $fn | gzip > ${path_idas_log}/${folder_name}/idas_sutdump.json.gz
 		cp /tmp/idas.decoded.json ${path_idas_log}/${folder_name}
+	else
+		mr=$(compose_and_send "yongjie sheng <ysheng4@ysheng4-NP5570M5.sh.intel.com>" "yongjie.sheng@intel.com,karthikeyan.selvaraj@intel.com,lokeswar.seetharama.nandhagopal@intel.com,scott.allen.petersen@intel.com" "hongwei.yu@intel.com" "Failed in parsing IDAS log on ${folder_name}" /tmp/idas.decoded.json)
 	fi
 	rm -f /tmp/idas.decoded.json
 }
