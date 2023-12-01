@@ -186,7 +186,7 @@ function compose_and_send()
 function idas_processing()
 {
 	folder_name=$(echo $1 | sed 's/\.tar\.xz$//')
-	prod_name=$2
+	prod_name=$(echo $2 | sed 's/^_//')
 	platform=""
 	cpu_type_str=$(grep "^CPU Type" $(find ${path_unzipped_log}/${folder_name} -name report.txt | head -n 1) | awk -F ":" '{ print $2 }')
 	case ${cpu_type_str} in
@@ -212,9 +212,10 @@ function idas_processing()
 	if /home/ysheng4/Downloads/IDASAgentAnalyzer_release/IDASAgentAnalyzer -p ${platform} -f $fn -o json >/tmp/idas.decoded.json
 	then
 		#mr=$(compose_and_send "yongjie sheng <ysheng4@ysheng4-NP5570M5.sh.intel.com>" "yongjie.sheng@intel.com,karthikeyan.selvaraj@intel.com,lokeswar.seetharama.nandhagopal@intel.com,scott.allen.petersen@intel.com" "hongwei.yu@intel.com" "IDAS analyzing result on ${folder_name}" /tmp/idas.decoded.json)
-		mkdir -p ${path_idas_log}/${folder_name}
-		cat $fn | gzip > ${path_idas_log}/${folder_name}/idas_sutdump.json.gz
-		cp /tmp/idas.decoded.json ${path_idas_log}/${folder_name}
+		customer_name=$(python3 /home/ysheng4/bin/customer_name.py ${prod_name})
+		mkdir -p ${path_idas_log}/${customer_name}/${folder_name}
+		cat $fn | gzip > ${path_idas_log}/${customer_name}/${folder_name}/idas_sutdump.json.gz
+		cp /tmp/idas.decoded.json ${path_idas_log}/${customer_name}/${folder_name}
 	else
 		mr=$(compose_and_send "yongjie sheng <ysheng4@ysheng4-NP5570M5.sh.intel.com>" "yongjie.sheng@intel.com,karthikeyan.selvaraj@intel.com,lokeswar.seetharama.nandhagopal@intel.com,scott.allen.petersen@intel.com" "hongwei.yu@intel.com" "Failed in parsing IDAS log on ${folder_name}" /tmp/idas.decoded.json)
 	fi
