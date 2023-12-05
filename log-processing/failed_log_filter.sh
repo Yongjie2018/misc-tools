@@ -201,13 +201,12 @@ function idas_processing()
 			;;
 	esac
 
-	if find ${path_unzipped_log}/${folder_name} -name idas_sutdump.json >/dev/null
+	fn=$(find ${path_unzipped_log}/${folder_name} -name idas_sutdump.json)
+	if ! [[ ( -n $fn )]]
 	then
-		fn=$(find ${path_unzipped_log}/${folder_name} -name idas_sutdump.json)
-		fn=$(echo $fn | sed 's/\"/\\\"/g')
-	else
 		return 1
 	fi
+	fn=$(echo $fn | sed 's/\"/\\\"/g')
 
 	if /home/ysheng4/Downloads/IDASAgentAnalyzer_release/IDASAgentAnalyzer -p ${platform} -f $fn -o json >/tmp/idas.decoded.json
 	then
