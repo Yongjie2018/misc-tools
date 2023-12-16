@@ -330,11 +330,11 @@ def dump_ppin_map_2p5(map, vendors):
     ppin_count = {key : 0 for key in vendors}
     ppin_count["Total"] = 0
     for entry in map.keys():
-        #if map[entry]["cpu_type"] not in valid_cpu_type:
-        #    continue
+        if map[entry]["cpu_type"] not in valid_cpu_type:
+            continue
         if map[entry]["loop_count"] == 1:
-            if entry.find("_2p5_") < 0:
-                print("Warning! inconsistent loop count and 2p5", entry, file=sys.stderr)
+            #if entry.find("_2p5_") < 0:
+            #    print("Warning! inconsistent loop count and 2p5", entry, file=sys.stderr)
             for ppin in map[entry]["ppin"]:
                 if ppin not in ppin_map:
                     ppin_map[ppin] = None
