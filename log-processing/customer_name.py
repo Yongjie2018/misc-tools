@@ -1,5 +1,7 @@
 import sys
 
+vendor_list = ["Alibaba", "ByteDance", "Inspur", "JD-Cloud", "Baidu", "Tencent", "Unknown"]
+
 prodname_to_vendor = {
 "AliServer-Xuanwu1.5-02-2U16HD2P" : "Alibaba",
 "AliServer-Xuanwu2.0-00-1UCG42PF" : "Alibaba",
@@ -17,6 +19,7 @@ prodname_to_vendor = {
 "G220-B3-F" : "ByteDance",
 "J360-G3" : "JD-Cloud",
 "0" : "Inspur",
+"M120-B3" : "Inspur",
 "NA" : "Inspur",
 "NF5170-M7-A0-R0-00" : "Inspur",
 "NF5180M7" : "Inspur",
@@ -52,6 +55,7 @@ prodname_to_vendor = {
 "SSIEISYSTEMMA2T-XI7-100D" : "Baidu",
 "SSIEISYSTEMA12T-XI7-400D" : "Inspur",
 "SSIEISYSTEMA12T-XI7-400D-1" : "Inspur",
+"SSIEISYSTEMA12T-XI7-400D-L" : "Inspur",
 "TS860-M7-A0-R0-00" : "Inspur",
 "XC222" : "Tencent",
 "XG262" : "Tencent"}
