@@ -223,16 +223,20 @@ function idas_processing()
 
 function share_logs()
 {
-	regex_date="[A-Za-z0-9]+_shc_report.*_([0-9]{4}-[0-9]{2}-[0-9]{2}).*"
+	regex_date="[A-Za-z0-9]+_shc_report.*_([0-9]{4}-[0-9]+)-([0-9]+).*"
 	fn=$1
 	fn_with_prod_name=$2
-	cp $fn ${path_prod_name_log}/${fn_with_prod_name}
-	chmod a+r ${path_prod_name_log}/${fn_with_prod_name}
-	#if [[ $fn =~ $regex_date ]]; then
-	#	log_date=${BASH_REMATCH[1]}
-	#	ssh smbshare@10.239.xx.xx "mkdir -p /home/smbshare/inspur-100k/${log_date}"
-	#	scp $fn smbshare@10.239.xx.xx:/home/smbshare/inspur-100k/${log_date}/
-	#fi
+	target_path=${path_prod_name_log}
+	
+	if [[ $fn =~ $regex_date ]]; then
+		ym=${BASH_REMATCH[1]}
+		log_date=${ym}-${BASH_REMATCH[2]}
+		target_path=${path_prod_name_log}/${ym}/${log_date}
+		mkdir -p ${target_path}
+	fi
+
+	cp $fn ${target_path}/${fn_with_prod_name}
+	chmod a+r ${target_path}/${fn_with_prod_name}
 }
 
 
