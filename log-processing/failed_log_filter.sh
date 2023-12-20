@@ -141,7 +141,7 @@ function any_bdat_ewl_captures()
 {
 	fn=$1
 	result=0
-	for x in $(find ${path_working}/${fn} -name BDAT.BIN); do
+	for x in $(find ${path_working}/${fn} -name BDAT.BIN) $(find ${path_working}/${fn} -name platform_bdat.bin); do
 		/home/ysheng4/bin/bdat_parser.py --bdatfile $x >/tmp/bdat_data.txt
 		if ! grep "Enhanced Warning Log Schema Decode" -A 13 /tmp/bdat_data.txt | grep "^FreeOffset.*No EWL Entries" >/dev/null; then
 			result=1
