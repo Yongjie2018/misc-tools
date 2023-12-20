@@ -248,12 +248,12 @@ function share_logs()
 	fn=$1
 	fn_with_prod_name=$2
 	plt=$3
-	target_path=${path_prod_name_log}${plt}
+	target_path=${path_prod_name_log}
 	
 	if [[ $fn =~ $regex_date ]]; then
 		ym=${BASH_REMATCH[1]}
 		log_date=${ym}-${BASH_REMATCH[2]}
-		target_path=${path_prod_name_log}${plt}/${ym}/${log_date}
+		target_path=${path_prod_name_log}/${log_date}
 		mkdir -p ${target_path}
 	fi
 
