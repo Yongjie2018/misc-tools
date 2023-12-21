@@ -296,7 +296,7 @@ for x in ${path_zipped_log}/*; do
 		continue
 	fi
 
-	cpu_type_str=$(grep "^CPU Type" $(report_txt) | awk -F ":" '{ print $2 }')
+	cpu_type_str=$(grep "^CPU Type" ${report_txt} | awk -F ":" '{ print $2 }')
 	case ${cpu_type_str} in
 		*SPR*)
 			platform=""
