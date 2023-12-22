@@ -331,6 +331,7 @@ if __name__ == "__main__":
     map = load_map(args.outfile)
     if args.build:
         map = build_map(args.directory, map)
+        map = build_map(args.directory + "_emr", map)
         save_map(args.outfile, map)
 
     header = ["Total", *vendor_list]
