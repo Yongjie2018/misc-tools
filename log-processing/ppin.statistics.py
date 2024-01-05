@@ -16,7 +16,7 @@ from customer_name import get_vendor_name, vendor_list
 dup_ppin = {}
 dup_sn = {}
 spr_cpu_type = ["SPR-E5", "SPR-E4"]
-emr_cpu_type = ["EMR-A0", "EMR-A1"]
+emr_cpu_type = ["EMR-A0", "EMR-A1", "EMR (no exact match)"]
 valid_cpu_type = spr_cpu_type
 #valid_cpu_type = ["SPR-E5", "SPR-E4", "SPR-E3"]
 
