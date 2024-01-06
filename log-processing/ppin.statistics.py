@@ -359,7 +359,7 @@ if __name__ == "__main__":
     for v in header:
         print("%10d" % (c[v]), end="")
     print("")
-    for year in range(2022, 2024):
+    for year in range(2022, 2025):
         for month in range(1, 13):
             c = dump_ppin_map_by_month(map, year, month, vendor_list)
             if c and c["Total"] > 0:
@@ -388,7 +388,7 @@ if __name__ == "__main__":
     for v in header:
         print("%10d" % (c[v]), end="")
     print("")
-    for year in range(2022, 2024):
+    for year in range(2022, 2025):
         for month in range(1, 13):
             c = dump_ppin_map_by_month(map, year, month, vendor_list)
             if c and c["Total"] > 0:
