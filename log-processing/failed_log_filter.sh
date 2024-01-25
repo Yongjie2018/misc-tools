@@ -244,7 +244,7 @@ function idas_processing()
 
 function share_logs()
 {
-	regex_date="[A-Za-z0-9]+_shc_report.*_([0-9]{4}-[0-9]+)-([0-9]+).*"
+	regex_date="[A-Za-z0-9\-]+_shc_report.*_([0-9]{4}-[0-9]+)-([0-9]+).*"
 	fn=$1
 	fn_with_prod_name=$2
 	plt=$3
@@ -277,7 +277,7 @@ for x in ${path_zipped_log}/*; do
 	extname=${filename#*.}
 	filename=${filename%%.*}
 
-	regex_p="([A-Za-z0-9]+)_shc_report_(.*)"
+	regex_p="([A-Za-z0-9\-]+)_shc_report_(.*)"
 
 	if [ -e ${path_processed_log}/${filename}.${extname} ]; then
 		continue
