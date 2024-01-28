@@ -92,7 +92,7 @@ def dump_ppin_map(map, vendors):
             continue
         if map[entry]["loop_count"] == 1:
             continue
-        result = re.search(r"^([0-9A-Za-z]+)__.*_shc_report_.*[0-9]{4}-[0-9]+-[0-9]+-[0-9]+-[0-9]+-[0-9]+", entry)
+        result = re.search(r"^([0-9A-Za-z\-]+)__.*_shc_report_.*[0-9]{4}-[0-9]+-[0-9]+-[0-9]+-[0-9]+-[0-9]+", entry)
         if result:
             sn = result.groups()[0]
             if sn not in dup_sn:
@@ -106,7 +106,7 @@ def dump_ppin_map(map, vendors):
             if ppin not in ppin_map:
                 ppin_map[ppin] = [map[entry]['date'],]
                 ppin_count["Total"] += 1
-                result = re.search(r"^[0-9A-Za-z]+__(.*)_shc_report_.*[0-9]{4}-[0-9]+-[0-9]+-[0-9]+-[0-9]+-[0-9]+", entry)
+                result = re.search(r"^[0-9A-Za-z\-]+__(.*)_shc_report_.*[0-9]{4}-[0-9]+-[0-9]+-[0-9]+-[0-9]+-[0-9]+", entry)
                 if not result:
                     print("Invalid path", entry, file=sys.stderr)
                 else:
@@ -139,7 +139,7 @@ def dump_ppin_map_by_month(map, year, month, vendors):
                 if ppin not in ppin_map:
                     ppin_map[ppin] = None
                     ppin_count["Total"] += 1
-                    result = re.search(r"^[0-9A-Za-z]+__(.*)_shc_report_.*[0-9]{4}-[0-9]+-[0-9]+-[0-9]+-[0-9]+-[0-9]+", entry)
+                    result = re.search(r"^[0-9A-Za-z\-]+__(.*)_shc_report_.*[0-9]{4}-[0-9]+-[0-9]+-[0-9]+-[0-9]+-[0-9]+", entry)
                     if not result:
                         print("Invalid path", entry, file=sys.stderr)
                     else:
@@ -224,7 +224,7 @@ def dump_sn_map_till(map, fn, till):
         if map[entry]["loop_count"] != 4:
             continue
         
-        result = re.search(r"^([0-9A-Za-z]+)__.*_shc_report_.*[0-9]{4}-[0-9]+-[0-9]+-[0-9]+-[0-9]+-[0-9]+", entry)
+        result = re.search(r"^([0-9A-Za-z\-]+)__.*_shc_report_.*[0-9]{4}-[0-9]+-[0-9]+-[0-9]+-[0-9]+-[0-9]+", entry)
         if not result:
             continue
         sn = result.groups()[0]
@@ -278,7 +278,7 @@ def dump_ppin_map_2p5(map, vendors):
                 if ppin not in ppin_map:
                     ppin_map[ppin] = None
                     ppin_count["Total"] += 1
-                    result = re.search(r"^[0-9A-Za-z]+__(.*)_shc_report_.*[0-9]{4}-[0-9]+-[0-9]+-[0-9]+-[0-9]+-[0-9]+", entry)
+                    result = re.search(r"^[0-9A-Za-z\-]+__(.*)_shc_report_.*[0-9]{4}-[0-9]+-[0-9]+-[0-9]+-[0-9]+-[0-9]+", entry)
                     if not result:
                         print("Invalid path", entry, file=sys.stderr)
                     else:
@@ -301,7 +301,7 @@ def dump_ppin_map_non_valid_cpu_type(map, vendors, print_non_valid):
                 if ppin not in ppin_map:
                     ppin_map[ppin] = None
                     ppin_count["Total"] += 1
-                    result = re.search(r"^[0-9A-Za-z]+__(.*)_shc_report_.*[0-9]{4}-[0-9]+-[0-9]+-[0-9]+-[0-9]+-[0-9]+", entry)
+                    result = re.search(r"^[0-9A-Za-z\-]+__(.*)_shc_report_.*[0-9]{4}-[0-9]+-[0-9]+-[0-9]+-[0-9]+-[0-9]+", entry)
                     if not result:
                         print("Invalid path", entry, file=sys.stderr)
                     else:
