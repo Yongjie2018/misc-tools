@@ -315,32 +315,9 @@ def dump_ppin_map_non_valid_cpu_type(map, vendors, print_non_valid):
     
     return ppin_count
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--directory", "-d", required=False, default="/opt/spr-100k-logs/unzipped_log", help="unzipped shc logs folder")
-    parser.add_argument("--outfile", "-o", required=False, default="/home/ysheng4/Downloads/ppin.map", help="the output mapping file")
-    parser.add_argument("--build", "-b", required=False, default=False, action='store_true', help="to build the un-parsed logs")
-    parser.add_argument("--print_non_valid", "-p", required=False, default=False, action='store_true', help="to print the non-valid logs (e.g. SPR-E3)")
-    parser.add_argument("--till", "-t", required=False, default="000000", help="please use YYYYMM as input (e.g. 202309)")
-    parser.add_argument("--ppin_list", required=False, default=False, action='store_true', help="to print the ppin list in total and per month")
-    parser.add_argument("--sn_list", required=False, default=False, action='store_true', help="to print the serial number list in total and per month")
-    args = parser.parse_args()
+def print_spr(map, args):
+    global vendor_list
 
-    print("Starting at", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-
-    map = load_map(args.outfile)
-    if args.build:
-        map = build_map(args.directory, map)
-        map = build_map(args.directory + "_emr", map)
-        save_map(args.outfile, map)
-
-    header = ["Total", *vendor_list]
-    # Title
-    print("                ", end="")
-    for v in header:
-        print("%10s" % (v), end="")
-    print("")
-    
     # SPR
     print("---------------------------------------------- SPR ----------------------------------------------")
     c = dump_ppin_map_non_valid_cpu_type(map, vendor_list, args.print_non_valid)
@@ -373,7 +350,12 @@ if __name__ == "__main__":
         dump_ppin_map_till(map, 'ppin-map.xlsx', args.till)
     if args.sn_list:
         dump_sn_map_till(map, 'sn-map.xlsx', args.till)
-    
+
+def print_emr(map, args):
+    global vendor_list
+    global emr_cpu_type
+    global valid_cpu_type
+
     # EMR
     print("---------------------------------------------- EMR ----------------------------------------------")
     valid_cpu_type = emr_cpu_type
@@ -397,5 +379,35 @@ if __name__ == "__main__":
                 for v in header:
                     print("%10d" % (c[v]), end="")
                 print("")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--directory", "-d", required=False, default="/opt/spr-100k-logs/unzipped_log_emr", help="unzipped shc logs folder")
+    parser.add_argument("--outfile", "-o", required=False, default="/home/ysheng4/Downloads/ppin.map", help="the output mapping file")
+    parser.add_argument("--build", "-b", required=False, default=False, action='store_true', help="to build the un-parsed logs")
+    parser.add_argument("--print_non_valid", "-p", required=False, default=False, action='store_true', help="to print the non-valid logs (e.g. SPR-E3)")
+    parser.add_argument("--till", "-t", required=False, default="000000", help="please use YYYYMM as input (e.g. 202309)")
+    parser.add_argument("--ppin_list", required=False, default=False, action='store_true', help="to print the ppin list in total and per month")
+    parser.add_argument("--sn_list", required=False, default=False, action='store_true', help="to print the serial number list in total and per month")
+    args = parser.parse_args()
+
+    print("Starting at", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+
+    map = load_map(args.outfile)
+    if args.build:
+        map = build_map(args.directory, map)
+        #map = build_map(args.directory + "_emr", map)
+        save_map(args.outfile, map)
+
+    header = ["Total", *vendor_list]
+    # Title
+    print("                ", end="")
+    for v in header:
+        print("%10s" % (v), end="")
+    print("")
     
+    #print_spr(map, args)
+    print_emr(map, args)
+        
     print("By", time.ctime(os.path.getmtime('/home/ysheng4/Downloads/ppin.map')))
