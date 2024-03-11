@@ -110,7 +110,7 @@ def dump_ppin_map(map, vendors):
                 if not result:
                     print("Invalid path", entry, file=sys.stderr)
                 else:
-                    ppin_count[get_vendor_name(result.groups()[0])] += 1
+                    ppin_count[get_vendor_name(result.groups()[0], True)] += 1
             else:
                 if ppin not in dup_ppin:
                     dup_ppin[ppin] = ppin_map[ppin]
@@ -143,7 +143,7 @@ def dump_ppin_map_by_month(map, year, month, vendors):
                     if not result:
                         print("Invalid path", entry, file=sys.stderr)
                     else:
-                        ppin_count[get_vendor_name(result.groups()[0])] += 1
+                        ppin_count[get_vendor_name(result.groups()[0], True)] += 1
     
     return ppin_count
 
@@ -282,7 +282,7 @@ def dump_ppin_map_2p5(map, vendors):
                     if not result:
                         print("Invalid path", entry, file=sys.stderr)
                     else:
-                        ppin_count[get_vendor_name(result.groups()[0])] += 1
+                        ppin_count[get_vendor_name(result.groups()[0], True)] += 1
 
     return ppin_count
 
@@ -305,7 +305,7 @@ def dump_ppin_map_non_valid_cpu_type(map, vendors, print_non_valid):
                     if not result:
                         print("Invalid path", entry, file=sys.stderr)
                     else:
-                        ppin_count[get_vendor_name(result.groups()[0])] += 1
+                        ppin_count[get_vendor_name(result.groups()[0], True)] += 1
     
     if print_non_valid:
         for x in cpu_type_list:

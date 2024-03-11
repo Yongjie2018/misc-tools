@@ -17,6 +17,7 @@ prodname_to_vendor = {
 "ByteDance-System" : "ByteDance",
 "G220-B3" : "ByteDance",
 "G220-B3-F" : "ByteDance",
+"G290-C3" : "ByteDance",
 "J360-G3" : "JD-Cloud",
 "0" : "Inspur",
 "M120-B3" : "Inspur",
@@ -56,15 +57,19 @@ prodname_to_vendor = {
 "SSIEISYSTEMA12T-XI7-400D" : "Inspur",
 "SSIEISYSTEMA12T-XI7-400D-1" : "Inspur",
 "SSIEISYSTEMA12T-XI7-400D-L" : "Inspur",
+"SSIEISYSTEMMBX-XI8-100D-J639" : "Inspur",
+"SSIEISYSTEMMBX-XI8-ZN-100D-J640" : "Baidu",
 "TS860-M7-A0-R0-00" : "Inspur",
+"Uranus-3U" : "Inspur",
 "XC222" : "Tencent",
 "XG262" : "Tencent"}
 
-def get_vendor_name(prod_name):
+def get_vendor_name(prod_name, verbose=False):
     if prod_name in prodname_to_vendor:
         return prodname_to_vendor[prod_name]
     else:
-        #print("Warning! can't recognize the product name", prod_name, file=sys.stderr)
+        if verbose:
+            print("Warning! can't recognize the product name", prod_name, file=sys.stderr)
         return "Unknown"
 
 if __name__ == "__main__":
