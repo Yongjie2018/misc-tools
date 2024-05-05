@@ -232,7 +232,7 @@ function idas_processing()
 
 	customer_name=$(python3 /home/ysheng4/bin/customer_name.py ${prod_name})
 	log_folder=$(dirname $fn)
-	/usr/bin/docker run -it -e IDAS_CONFIG_FILESERVER_DIR=${customer_name}_logs/${platform_str} -e IDAS_CONFIG_OUTPUT_FORMAT=tap -e IDAS_CONFIG_PLATFORM=${platform_str} -e IDAS_CONFIG_HOSTNAME=${folder_name} -e IDAS_CONFIG_COLLECT_DATA=Y -v ${log_folder}:/sut 7bddee974cc8
+	/usr/bin/docker run -e IDAS_CONFIG_FILESERVER_DIR=${customer_name}_logs/${platform_str} -e IDAS_CONFIG_OUTPUT_FORMAT=tap -e IDAS_CONFIG_PLATFORM=${platform_str} -e IDAS_CONFIG_HOSTNAME=${folder_name} -e IDAS_CONFIG_COLLECT_DATA=Y -v ${log_folder}:/sut 7bddee974cc8
 	if [ -f $fn ]
 	then
 		mkdir -p ${path_idas_log}${plt}/${customer_name}/${folder_name}
