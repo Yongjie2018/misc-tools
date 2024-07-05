@@ -318,7 +318,7 @@ for x in ${path_zipped_log}/*; do
 	catch_calprit ${filename}
 	if (( 0 == $? )); then
 		echo "Caught a calprit ${filename}"
-		mr=$(compose_and_send "yongjie sheng <ysheng4@ysheng4-NP5570M5.sh.intel.com>" "yongjie.sheng@intel.com" "yongjie.sheng@intel.com" "Caught a calprit ${filename}" /home/ysheng4/default-mail.txt)
+		mr=$(compose_and_send "yongjie sheng <ysheng4@ysheng4-NP5570M5.sh.intel.com>" "yongjie.sheng@intel.com" "hongwei.yu@intel.com" "Caught a calprit ${filename}" /home/ysheng4/default-mail.txt)
 		touch ${path_unzipped_failed_log}/${filename}.ppin 
 	fi
 
@@ -329,7 +329,7 @@ for x in ${path_zipped_log}/*; do
 
 	bdat_result=$(any_bdat_ewl_captures ${filename})
 	if [ "$bdat_result" != "0" ]; then
-		mr=$(compose_and_send "yongjie sheng <ysheng4@ysheng4-NP5570M5.sh.intel.com>" "yongjie.sheng@intel.com" "yongjie.sheng@intel.com" "Got BDAT failure ${filename} with prod name ${prod_name}" /tmp/bdat_data.txt)
+		mr=$(compose_and_send "yongjie sheng <ysheng4@ysheng4-NP5570M5.sh.intel.com>" "yongjie.sheng@intel.com" "hongwei.yu@intel.com" "Got BDAT failure ${filename} with prod name ${prod_name}" /tmp/bdat_data.txt)
 	fi
 
 	case ${result} in
@@ -407,5 +407,5 @@ done
 
 rm -f ${path_lock}
 if [[ "$processed_count" -ne "0" ]]; then
-	mr=$(compose_and_send "yongjie sheng <ysheng4@ysheng4-NP5570M5.sh.intel.com>" "yongjie.sheng@intel.com" "yongjie.sheng@intel.com" "Processed ${processed_count} logs $(date)" /home/ysheng4/default-mail.txt)
+	mr=$(compose_and_send "yongjie sheng <ysheng4@ysheng4-NP5570M5.sh.intel.com>" "yongjie.sheng@intel.com" "hongwei.yu@intel.com" "Processed ${processed_count} logs $(date)" /home/ysheng4/default-mail.txt)
 fi
